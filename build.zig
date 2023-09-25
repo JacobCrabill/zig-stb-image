@@ -28,7 +28,7 @@ pub fn build(b: *std.build.Builder) !void {
 
     // Link system libraries
     stb.linkLibC();
-    // stb.linkSystemLibrary("m");
+    stb.installHeadersDirectory("include/stb", "stb");
     b.installArtifact(stb);
 
     // Exampe application using libstb-image
@@ -54,7 +54,7 @@ pub fn build(b: *std.build.Builder) !void {
     }
 
     // Run the application
-    const run = b.step("run", "Run the application");
+    const run = b.step("run", "Run the demo application");
     const runner = b.addRunArtifact(exe);
     run.dependOn(&runner.step);
 }
