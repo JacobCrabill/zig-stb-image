@@ -1,4 +1,5 @@
 const std = @import("std");
+const stb = @import("stb_image.zig");
 const c = @cImport({
     @cInclude("stb/stb_image.h");
 });
@@ -6,7 +7,9 @@ const c = @cImport({
 const Allocator = std.mem.Allocator;
 const stdout = std.io.getStdOut().writer();
 
-const os = std.os;
+// Sample PNG image to be loaded directly in-memory
+const sample_png_name = "zig-zero.png";
+const sample_png = @embedFile(sample_png_name);
 
 pub fn main() !void {
     var alloc = std.heap.page_allocator;
@@ -18,25 +21,26 @@ pub fn main() !void {
         try stdout.print("  {s} <image file>.[jpg,png,git,tif,bmp]\n", .{args[0]});
         try stdout.print("\n", .{});
         try stdout.print("Supported formats: PNG, JPEG, TIFF, GIF, BMP, PSD, TGA\n", .{});
-        os.exit(0);
+        return;
     }
 
     const filename = args[1];
 
-    var x: i32 = 0;
-    var y: i32 = 0;
-    var n: i32 = 0;
-    var data: [*]u8 = c.stbi_load(@as([*c]u8, filename), @as([*c]i32, &x), @as([*c]i32, &y), @as([*c]i32, &n), 0);
-    defer c.stbi_image_free(data);
-
-    // Note that we're using the C header directly, so no zig-level error handling (you're on your own there)
-    if (data[0] == 0) {
-        // Actually we can't hit this path(?), as Zig will panic when crossing the C/Zig ABI boundary
-        // (cannot cast "null" to a valid Zig pointer)
-        try stdout.print("ERROR: Failed to load file '{s}'\n", .{filename});
-        os.exit(1);
+    var image = stb.load_image(filename);
+    defer stb.free_image_optional(&image);
+    if (image) |img| {
+        std.debug.print("Image: {s}\n", .{filename});
+        std.debug.print("Got image of size {d}x{d} with {d} channels\n", .{ img.width, img.height, img.nchan });
+    } else {
+        std.debug.print("Error loading {s}\n", .{filename});
     }
 
-    std.debug.print("Image: {s}\n", .{filename});
-    std.debug.print("Got image of size {d}x{d} with {d} channels\n", .{ x, y, n });
+    var image_mem = stb.load_image_from_memory(sample_png);
+    if (image_mem) |*img| {
+        std.debug.print("Image: Embedded PNG {s}\n", .{sample_png_name});
+        std.debug.print("Got image of size {d}x{d} with {d} channels\n", .{ img.width, img.height, img.nchan });
+        img.deinit();
+    } else {
+        std.debug.print("Error loading image from memory\n", .{});
+    }
 }
