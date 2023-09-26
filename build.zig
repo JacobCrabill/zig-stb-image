@@ -14,6 +14,11 @@ pub fn build(b: *std.build.Builder) !void {
     // what target to build for. Defaults to native build.
     const target = b.standardTargetOptions(.{});
 
+    // Export the 'stb_image' module to downstream packages
+    _ = b.addModule("stb_image", .{
+        .source_file = .{ .path = "src/stb_image.zig" },
+    });
+
     const stb = b.addStaticLibrary(.{
         .name = "stb-image",
         .optimize = optimize,
