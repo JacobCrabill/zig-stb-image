@@ -26,21 +26,14 @@ pub fn main() !void {
 
     const filename = args[1];
 
-    var image = stb.load_image(filename);
-    defer stb.free_image_optional(&image);
-    if (image) |img| {
-        std.debug.print("Image: {s}\n", .{filename});
-        std.debug.print("Got image of size {d}x{d} with {d} channels\n", .{ img.width, img.height, img.nchan });
-    } else {
-        std.debug.print("Error loading {s}\n", .{filename});
-    }
+    var image = try stb.load_image(filename);
+    defer stb.free_image(&image);
+    std.debug.print("Image: {s}\n", .{filename});
+    std.debug.print("Got image of size {d}x{d} with {d} channels\n", .{ image.width, image.height, image.nchan });
 
-    var image_mem = stb.load_image_from_memory(sample_png);
-    if (image_mem) |*img| {
-        std.debug.print("Image: Embedded PNG {s}\n", .{sample_png_name});
-        std.debug.print("Got image of size {d}x{d} with {d} channels\n", .{ img.width, img.height, img.nchan });
-        img.deinit();
-    } else {
-        std.debug.print("Error loading image from memory\n", .{});
-    }
+    var image_mem = try stb.load_image_from_memory(sample_png);
+    defer image_mem.deinit();
+
+    std.debug.print("Image: Embedded PNG {s}\n", .{sample_png_name});
+    std.debug.print("Got image of size {d}x{d} with {d} channels\n", .{ image_mem.width, image_mem.height, image_mem.nchan });
 }

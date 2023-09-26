@@ -23,14 +23,14 @@ pub const Image = struct {
 };
 
 /// Load an image from a file
-pub fn load_image(filename: []const u8) ?Image {
+pub fn load_image(filename: []const u8) !Image {
     var img = Image{};
 
     const filename_c = @as([*c]const u8, &filename[0]);
     const iptr: usize = @intFromPtr(c.stbi_load(filename_c, @as([*c]i32, &img.width), @as([*c]i32, &img.height), @as([*c]i32, &img.nchan), 0));
     if (iptr == 0) {
         log.err("Error loading image {s} - check that the file exists at the given path", .{filename});
-        return null;
+        return error.LoadError;
     }
 
     img.data = @ptrFromInt(iptr);
@@ -38,13 +38,13 @@ pub fn load_image(filename: []const u8) ?Image {
 }
 
 /// Load an image from raw bytes in memory
-pub fn load_image_from_memory(buf: []const u8) ?Image {
+pub fn load_image_from_memory(buf: []const u8) !Image {
     var img = Image{};
     const iptr: usize = @intFromPtr(c.stbi_load_from_memory(@as([*c]const u8, &buf[0]), @intCast(buf.len), @as([*c]i32, &img.width), @as([*c]i32, &img.height), @as([*c]i32, &img.nchan), 0));
 
     if (iptr == 0) {
         log.err("Error loading image from memory - unsupported format or corrupted data?", .{});
-        return null;
+        return error.LoadError;
     }
 
     img.data = @ptrFromInt(iptr);
@@ -54,15 +54,4 @@ pub fn load_image_from_memory(buf: []const u8) ?Image {
 /// Free the data associated with an Image
 pub fn free_image(image: *Image) void {
     image.deinit();
-}
-
-/// Free the data associated with an Image, if it exists
-/// Helper function to play nicely with the optional return values of load_image*
-/// Example:
-///   var image = stb.load_image(filename);
-///   defer stb.free_image_optional(&image);
-pub fn free_image_optional(image: *?Image) void {
-    if (image.*) |*img| {
-        img.deinit();
-    }
 }
