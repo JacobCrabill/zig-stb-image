@@ -5,7 +5,7 @@ const LibExeObjStep = std.build.LibExeObjStep;
 
 const CFlags = &[_][]const u8{"-fPIC"};
 
-pub fn build(b: *std.build.Builder) !void {
+pub fn build(b: *std.Build) !void {
     // Standard release options allow the person running `zig build` to select
     // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.
     const optimize = b.standardOptimizeOption(.{});
@@ -16,7 +16,7 @@ pub fn build(b: *std.build.Builder) !void {
 
     // Export the 'stb_image' module to downstream packages
     _ = b.addModule("stb_image", .{
-        .source_file = .{ .path = "src/stb_image.zig" },
+        .root_source_file = .{ .path = "src/stb_image.zig" },
     });
 
     const stb = b.addStaticLibrary(.{
