@@ -14,11 +14,6 @@ pub fn build(b: *std.Build) !void {
     // what target to build for. Defaults to native build.
     const target = b.standardTargetOptions(.{});
 
-    // Export the 'stb_image' module to downstream packages
-    _ = b.addModule("stb_image", .{
-        .root_source_file = .{ .path = "src/stb_image.zig" },
-    });
-
     const stb = b.addStaticLibrary(.{
         .name = "stb-image",
         .optimize = optimize,
@@ -34,7 +29,14 @@ pub fn build(b: *std.Build) !void {
     // Link system libraries
     stb.linkLibC();
     stb.installHeadersDirectory("include/stb", "stb");
-    b.installArtifact(stb);
+    const stb_artifact = b.addInstallArtifact(stb, .{});
+    b.getInstallStep().dependOn(&stb_artifact.step);
+
+    // Export the 'stb_image' module to downstream packages
+    const mod = b.addModule("stb_image", .{
+        .root_source_file = .{ .path = "src/stb_image.zig" },
+    });
+    mod.linkLibrary(stb_artifact.artifact);
 
     // Exampe application using libstb-image
     const exe = b.addExecutable(.{
