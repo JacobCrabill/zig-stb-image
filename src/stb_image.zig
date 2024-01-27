@@ -23,13 +23,22 @@ pub const Image = struct {
 };
 
 /// Load an image from a file
-pub fn load_image(filename: []const u8) !Image {
+pub fn load_image(options: struct {
+    filename: []const u8,
+    desired_channels: usize = 0,
+}) !Image {
     var img = Image{};
 
-    const filename_c = @as([*c]const u8, &filename[0]);
-    const iptr: usize = @intFromPtr(c.stbi_load(filename_c, @as([*c]i32, &img.width), @as([*c]i32, &img.height), @as([*c]i32, &img.nchan), 0));
+    const filename_c = @as([*c]const u8, &options.filename[0]);
+    const iptr: usize = @intFromPtr(c.stbi_load(
+        filename_c,
+        @as([*c]i32, &img.width),
+        @as([*c]i32, &img.height),
+        @as([*c]i32, &img.nchan),
+        @intCast(options.desired_channels),
+    ));
     if (iptr == 0) {
-        log.err("Error loading image {s} - check that the file exists at the given path", .{filename});
+        log.err("Error loading image {s} - check that the file exists at the given path", .{options.filename});
         return error.LoadError;
     }
 
@@ -38,9 +47,19 @@ pub fn load_image(filename: []const u8) !Image {
 }
 
 /// Load an image from raw bytes in memory
-pub fn load_image_from_memory(buf: []const u8) !Image {
+pub fn load_image_from_memory(options: struct {
+    buf: []const u8,
+    desired_channels: usize = 0,
+}) !Image {
     var img = Image{};
-    const iptr: usize = @intFromPtr(c.stbi_load_from_memory(@as([*c]const u8, &buf[0]), @intCast(buf.len), @as([*c]i32, &img.width), @as([*c]i32, &img.height), @as([*c]i32, &img.nchan), 0));
+    const iptr: usize = @intFromPtr(c.stbi_load_from_memory(
+        @as([*c]const u8, &options.buf[0]),
+        @intCast(options.buf.len),
+        @as([*c]i32, &img.width),
+        @as([*c]i32, &img.height),
+        @as([*c]i32, &img.nchan),
+        @intCast(options.desired_channels),
+    ));
 
     if (iptr == 0) {
         log.err("Error loading image from memory - unsupported format or corrupted data?", .{});
