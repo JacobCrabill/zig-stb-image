@@ -19,7 +19,7 @@ pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
 
     ////////////////////////////////////////////////////////////////////////////
-    // Create the STB Image Module
+    // Create the Zig STB Image Module
     ////////////////////////////////////////////////////////////////////////////
 
     // Compile the C source file into a static library, and ensure it gets installed
@@ -37,18 +37,17 @@ pub fn build(b: *std.Build) !void {
 
     // Export the 'stb_image' module to downstream packages
     //
-    // Much like a CMake target, the libraries and includes attached to this
-    // module will apply transitively to the modules of downstream users,
-    // meaning it should "Just Work"
+    // Much like a CMake target, the libraries and includes attached to this module
+    // will apply transitively to the modules of downstream packages, meaning it
+    // should "Just Work"
     const mod = b.addModule("stb_image", .{
         .root_source_file = .{ .path = "src/stb_image.zig" },
         .link_libc = true,
     });
-    mod.addIncludePath(.{ .path = "include" });
     mod.linkLibrary(stb);
 
     ////////////////////////////////////////////////////////////////////////////
-    // Example application using libstb-image
+    // Example application using zig-stb-image
     ////////////////////////////////////////////////////////////////////////////
 
     const exe = b.addExecutable(.{
@@ -60,23 +59,17 @@ pub fn build(b: *std.Build) !void {
         .link_libc = true,
     });
 
-    exe.root_module.addIncludePath(.{ .path = "include" });
-    exe.root_module.linkLibrary(stb);
-    exe.installHeadersDirectory("include/stb", "stb");
+    exe.root_module.addImport("stb_image", mod);
     b.installArtifact(exe);
 
-    const app_step = b.step("zig-stb", "Build the example application");
-    app_step.dependOn(&exe.step);
-
     // Configure how the main executable should be run
-    const app = b.addRunArtifact(exe);
-    app.step.dependOn(b.getInstallStep());
+    const exe_runner = b.addRunArtifact(exe);
+    exe_runner.step.dependOn(b.getInstallStep());
     if (b.args) |args| {
-        app.addArgs(args);
+        exe_runner.addArgs(args);
     }
 
     // Run the application
     const run = b.step("run", "Run the demo application");
-    const runner = b.addRunArtifact(exe);
-    run.dependOn(&runner.step);
+    run.dependOn(&exe_runner.step);
 }
