@@ -1,4 +1,6 @@
 .{
+    .name = "zig-stb-image",
+    .version = "2.28.0", // Version from stb_image.h
     .paths = .{
         "include/",
         "src/",
@@ -6,6 +8,4 @@
         "build.zig.zon",
         "README.md",
     },
-    .name = "zig-stb-image",
-    .version = "2.28.0", // Version from stb_image.h
 }

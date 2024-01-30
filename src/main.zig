@@ -1,10 +1,8 @@
 const std = @import("std");
 const stb = @import("stb_image.zig");
-const c = @cImport({
-    @cInclude("stb/stb_image.h");
-});
 
 const Allocator = std.mem.Allocator;
+const ArrayList = std.ArrayList;
 const stdout = std.io.getStdOut().writer();
 
 // Sample PNG image to be loaded directly in-memory
@@ -12,7 +10,7 @@ const sample_png_name = "zig-zero.png";
 const sample_png = @embedFile(sample_png_name);
 
 pub fn main() !void {
-    var alloc = std.heap.page_allocator;
+    const alloc = std.heap.page_allocator;
     const args = try std.process.argsAlloc(alloc);
     defer std.process.argsFree(alloc, args);
 
