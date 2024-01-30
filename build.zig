@@ -1,9 +1,6 @@
 const builtin = @import("builtin");
 const std = @import("std");
 
-const Builder = std.Build;
-const LibExeObjStep = std.build.LibExeObjStep;
-
 const CFlags = &[_][]const u8{"-fPIC"};
 
 pub fn build(b: *std.Build) !void {
@@ -18,14 +15,15 @@ pub fn build(b: *std.Build) !void {
         }
     }
 
-    // Standard release options allow the person running `zig build` to select
-    // between Debug, ReleaseSafe, ReleaseFast, and ReleaseSmall.
     const optimize = b.standardOptimizeOption(.{});
-
-    // Standard target options allows the person running `zig build` to choose
-    // what target to build for. Defaults to native build.
     const target = b.standardTargetOptions(.{});
 
+    ////////////////////////////////////////////////////////////////////////////
+    // Create the STB Image Module
+    ////////////////////////////////////////////////////////////////////////////
+
+    // Compile the C source file into a static library, and ensure it gets installed
+    // along with the required include directory
     const stb = b.addStaticLibrary(.{
         .name = "stb-image",
         .optimize = optimize,
@@ -37,11 +35,22 @@ pub fn build(b: *std.Build) !void {
     stb.installHeadersDirectory("include/stb", "stb");
     b.installArtifact(stb);
 
-    // Configure compilation options
-    // May be needed to compile for various targets (Mac/Windows, Arm, MUSL, etc.)
-    // stb.defineCMacro("FOO", "1");
+    // Export the 'stb_image' module to downstream packages
+    //
+    // Much like a CMake target, the libraries and includes attached to this
+    // module will apply transitively to the modules of downstream users,
+    // meaning it should "Just Work"
+    const mod = b.addModule("stb_image", .{
+        .root_source_file = .{ .path = "src/stb_image.zig" },
+        .link_libc = true,
+    });
+    mod.addIncludePath(.{ .path = "include" });
+    mod.linkLibrary(stb);
 
+    ////////////////////////////////////////////////////////////////////////////
     // Example application using libstb-image
+    ////////////////////////////////////////////////////////////////////////////
+
     const exe = b.addExecutable(.{
         .name = "zig-stb",
         .root_source_file = .{ .path = "src/main.zig" },
@@ -55,15 +64,6 @@ pub fn build(b: *std.Build) !void {
     exe.root_module.linkLibrary(stb);
     exe.installHeadersDirectory("include/stb", "stb");
     b.installArtifact(exe);
-
-    // Export the 'stb_image' module to downstream packages
-    const mod = b.addModule("stb_image", .{
-        .root_source_file = .{ .path = "src/stb_image.zig" },
-        .link_libc = true,
-    });
-    mod.addIncludePath(.{ .path = "include" });
-    // mod.addCSourceFile(.{ .file = .{ .path = "src/stb_image.c" }, .flags = CFlags });
-    mod.linkLibrary(stb);
 
     const app_step = b.step("zig-stb", "Build the example application");
     app_step.dependOn(&exe.step);

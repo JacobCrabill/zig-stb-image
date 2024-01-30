@@ -1,0 +1,16 @@
+.{
+    .name = "zig-stbi-test",
+    .version = "0.0.1",
+    .paths = .{
+        "src/",
+        "public/",
+        "tools/",
+        "README.md",
+    },
+    .dependencies = .{
+        .zig_stb_image = .{
+            .url = "https://github.com/JacobCrabill/zig-stb-image/archive/d3e5eddcbea9bb26267d9d44e3f12e90ba6566e4.tar.gz",
+            .hash = "1220048c7cf9f2d17ded5b6665db695d47985da08ce03ef6a4f8aa693990e1d0a22a",
+        },
+    },
+}
