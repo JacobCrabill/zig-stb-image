@@ -32,7 +32,7 @@ pub fn build(b: *std.Build) !void {
     });
     stb.addIncludePath(.{ .path = "include" });
     stb.addCSourceFile(.{ .file = .{ .path = "src/stb_image.c" }, .flags = CFlags });
-    stb.installHeadersDirectory("include/stb", "stb");
+    stb.installHeadersDirectory(.{ .path = "include/stb" }, "stb", .{});
     b.installArtifact(stb);
 
     // Export the 'stb_image' module to downstream packages

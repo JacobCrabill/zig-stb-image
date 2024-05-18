@@ -23,11 +23,12 @@ pub const Image = struct {
 };
 
 /// Load an image from a file
-pub fn load_image(filename: []const u8) !Image {
-    var img = Image{};
+pub fn load_image(filename: []const u8, nchannels: ?i32) !Image {
+    var img = Image{ .nchan = nchannels orelse 3 };
 
+    const req_nchan: i32 = if (nchannels == null) 0 else 1;
     const filename_c = @as([*c]const u8, &filename[0]);
-    const iptr: usize = @intFromPtr(c.stbi_load(filename_c, @as([*c]i32, &img.width), @as([*c]i32, &img.height), @as([*c]i32, &img.nchan), 0));
+    const iptr: usize = @intFromPtr(c.stbi_load(filename_c, @as([*c]i32, &img.width), @as([*c]i32, &img.height), @as([*c]i32, &img.nchan), req_nchan));
     if (iptr == 0) {
         log.err("Error loading image {s} - check that the file exists at the given path", .{filename});
         return error.LoadError;
