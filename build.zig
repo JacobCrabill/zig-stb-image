@@ -30,9 +30,9 @@ pub fn build(b: *std.Build) !void {
         .target = target,
         .link_libc = true,
     });
-    stb.addIncludePath(.{ .path = "include" });
-    stb.addCSourceFile(.{ .file = .{ .path = "src/stb_image.c" }, .flags = CFlags });
-    stb.installHeadersDirectory(.{ .path = "include/stb" }, "stb", .{});
+    stb.addIncludePath(b.path("include"));
+    stb.addCSourceFile(.{ .file = b.path("src/stb_image.c"), .flags = CFlags });
+    stb.installHeadersDirectory(b.path("include/stb"), "stb", .{});
     b.installArtifact(stb);
 
     // Export the 'stb_image' module to downstream packages
@@ -41,7 +41,7 @@ pub fn build(b: *std.Build) !void {
     // will apply transitively to the modules of downstream packages, meaning it
     // should "Just Work"
     const mod = b.addModule("stb_image", .{
-        .root_source_file = .{ .path = "src/stb_image.zig" },
+        .root_source_file = b.path("src/stb_image.zig"),
         .link_libc = true,
     });
     mod.linkLibrary(stb);
@@ -52,7 +52,7 @@ pub fn build(b: *std.Build) !void {
 
     const exe = b.addExecutable(.{
         .name = "zig-stb",
-        .root_source_file = .{ .path = "src/main.zig" },
+        .root_source_file = b.path("src/main.zig"),
         .version = .{ .major = 0, .minor = 1, .patch = 0 },
         .optimize = optimize,
         .target = target,
