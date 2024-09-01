@@ -21,7 +21,7 @@ pub fn main() !void {
     const filename = args[1];
 
     var image = try stb.load_image(filename);
-    defer stb.free_image(&image);
+    defer image.deinit();
     std.debug.print("Image: {s}\n", .{filename});
     std.debug.print("Got image of size {d}x{d} with {d} channels\n", .{ image.width, image.height, image.nchan });
 }

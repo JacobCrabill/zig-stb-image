@@ -30,7 +30,7 @@ Run zig build in your project, and the compiler will instruct you to add a `.has
 under the .url line:
 
 ```
-note: expected .hash = "1220b01a5a08e610a3a00ea722cec42c021983afcf81e444ba250adf548f2a245b1f",
+note: expected .hash = "<long base64 string>",
 ```
 
 ## Build System (build.zig)
@@ -41,14 +41,15 @@ To use the library, add the dependency in your build.zig:
 const std = @import("std");
 
 pub fn build(b: *std.Build) void {
-    // ...
     // Setup your target and optimization options; create an exe or lib target
+    const target = b.standardTargetOptions(.{});
+    const optimize = b.standardOptimizeOption(.{});
     // ...
 
     // Declare the zig_stb_image dependency and import it to your target's root module
     const zig_stb_image = b.dependency("zig_stb_image", .{
-        .target = tgt,
-        .optimize = opt,
+        .target = target,
+        .optimize = optimize,
     });
     exe.root_module.addImport("stb-image", zig_stb_image.module("stb_image"));
 }
@@ -60,10 +61,9 @@ You can now use it in your src/main.zig file:
 const stb = @import("stb-image");
 
 pub fn main() !void {
-    const img = stb.image_load(.{
-        .filename = "hello.png",
-        .desired_channels = 4,
-    });
+    const filename = "hello.png";
+    const nchan: i32 = 4;
+    const img = stb.image_load(filename, nchan);
     defer img.deinit();
 }
 ```
