@@ -1,5 +1,6 @@
 .{
-    .name = "zig-stb-image",
+    .name = .zig_stb_image,
+    .fingerprint = 0x80e201175f5d0f5,
     .version = "2.28.0", // Version from stb_image.h
     .paths = .{
         "include/",

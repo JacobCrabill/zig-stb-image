@@ -11,7 +11,7 @@ pub fn build(b: *std.Build) !void {
     // Example application using libstb-image
     const exe = b.addExecutable(.{
         .name = "zig-stb",
-        .root_source_file = .{ .path = "main.zig" },
+        .root_source_file = b.path("main.zig"),
         .version = .{ .major = 0, .minor = 1, .patch = 0 },
         .optimize = optimize,
         .target = target,

@@ -13,9 +13,10 @@ compile it into a static library that Zig can link to).
 
 Create a `build.zig.zon` in your project (replace LATEST_COMMIT with the latest commit hash):
 
-```
+```zon
 .{
-    .name = "mypkg",
+    .name = .mypkg,
+    .fingerprint = 0xplaceholder_value,
     .version = "0.1.0",
     .dependencies = .{
         .zig_stb_image = .{
@@ -63,7 +64,7 @@ const stb = @import("stb-image");
 pub fn main() !void {
     const filename = "hello.png";
     const nchan: i32 = 4;
-    const img = stb.image_load(filename, nchan);
+    var img = stb.image_load(filename, nchan);
     defer img.deinit();
 }
 ```
