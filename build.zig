@@ -42,11 +42,13 @@ pub fn build(b: *std.Build) !void {
 
     const exe = b.addExecutable(.{
         .name = "zig-stb",
-        .root_source_file = b.path("src/main.zig"),
-        .version = .{ .major = 0, .minor = 1, .patch = 0 },
-        .optimize = optimize,
-        .target = target,
-        .link_libc = true,
+        .version = .{ .major = 0, .minor = 2, .patch = 0 },
+        .root_module = b.createModule(.{
+            .root_source_file = b.path("src/main.zig"),
+            .target = target,
+            .optimize = optimize,
+            .link_libc = true,
+        }),
     });
 
     exe.root_module.addImport("stb_image", mod);

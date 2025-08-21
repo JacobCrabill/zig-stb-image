@@ -1,12 +1,12 @@
 .{
     .name = .zig_stb_image,
     .fingerprint = 0x80e201175f5d0f5,
-    .version = "2.28.0", // Version from stb_image.h
+    .version = "2.28.0-2", // Version from stb_image.h
+    .minimum_zig_version = "0.15.1",
     .paths = .{
         "include/",
         "src/",
         "build.zig",
         "build.zig.zon",
-        "README.md",
     },
 }
