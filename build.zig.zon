@@ -2,7 +2,13 @@
     .name = .zig_stb_image,
     .fingerprint = 0x80e201175f5d0f5,
     .version = "2.28.0-2", // Version from stb_image.h
-    .minimum_zig_version = "0.15.1",
+    .minimum_zig_version = "0.17.0",
+    .dependencies = .{
+        .translate_c = .{
+            .url = "git+https://codeberg.org/ziglang/translate-c#38d8339d9050eafe5dcf85b4fc9368576ca967e1",
+            .hash = "translate_c-0.0.0-Q_BUWoROBwAyokT5SJSw4YIrwdLd1w53i-pEYwBDqXZt",
+        },
+    },
     .paths = .{
         "include/",
         "src/",

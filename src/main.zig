@@ -1,22 +1,18 @@
 const std = @import("std");
 const stb = @import("stb_image");
 
-const Allocator = std.mem.Allocator;
-const ArrayList = std.ArrayList;
-
 // Sample PNG image to be loaded directly in-memory
 const sample_png_name = "zig-zero.png";
 const sample_png = @embedFile(sample_png_name);
 
-pub fn main() !void {
-    const alloc = std.heap.page_allocator;
-    const args = try std.process.argsAlloc(alloc);
-    defer std.process.argsFree(alloc, args);
-
+pub fn main(init: std.process.Init) !void {
     var buf: [1024]u8 = undefined;
-    var stdout_writer = std.fs.File.stdout().writer(&buf);
-    const stdout = &stdout_writer.interface;
+    var stdout_writer = std.Io.File.stdout().writer(init.io, &buf);
+    const stdout: *std.Io.Writer = &stdout_writer.interface;
     defer stdout.flush() catch {};
+
+    const args = try init.minimal.args.toSlice(init.gpa);
+    defer init.gpa.free(args);
 
     if (args.len < 2) {
         try stdout.print("Usage:\n", .{});

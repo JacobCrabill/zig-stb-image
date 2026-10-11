@@ -1,12 +1,25 @@
 const builtin = @import("builtin");
 const std = @import("std");
 
+const Translator = @import("translate_c").Translator;
 const CFlags = &[_][]const u8{"-fPIC"};
 
 pub fn build(b: *std.Build) !void {
     const optimize = b.standardOptimizeOption(.{});
     const target = b.standardTargetOptions(.{});
     const linkage = b.option(std.builtin.LinkMode, "linkage", "Static or dynamic linkage") orelse .static;
+
+    ////////////////////////////////////////////////////////////////////////////
+    // cImport is gone; translate all C files to Zig at build time instead
+    ////////////////////////////////////////////////////////////////////////////
+    const translate_c = b.dependency("translate_c", .{});
+    const translator: Translator = .init(translate_c, .{
+        .c_source_file = b.path("include/stb/stb_image.h"),
+        .target = target,
+        .optimize = optimize,
+        // additional options now available that go here:
+        // https://codeberg.org/ziglang/translate-c#options
+    });
 
     ////////////////////////////////////////////////////////////////////////////
     // Create the Zig STB Image Module
@@ -22,6 +35,7 @@ pub fn build(b: *std.Build) !void {
         .target = target,
         .optimize = optimize,
         .link_libc = true,
+        .imports = &.{.{ .name = "stb", .module = translator.mod }},
     });
     mod.addIncludePath(b.path("include"));
     mod.addCSourceFile(.{ .file = b.path("src/stb_image.c"), .flags = CFlags });
@@ -40,7 +54,7 @@ pub fn build(b: *std.Build) !void {
     // Example application using zig-stb-image
     ////////////////////////////////////////////////////////////////////////////
 
-    const exe = b.addExecutable(.{
+    const example = b.addExecutable(.{
         .name = "zig-stb",
         .version = .{ .major = 0, .minor = 2, .patch = 0 },
         .root_module = b.createModule(.{
@@ -51,17 +65,15 @@ pub fn build(b: *std.Build) !void {
         }),
     });
 
-    exe.root_module.addImport("stb_image", mod);
-    b.installArtifact(exe);
+    example.root_module.addImport("stb_image", mod);
+    b.installArtifact(example);
 
     // Configure how the main executable should be run
-    const exe_runner = b.addRunArtifact(exe);
-    exe_runner.step.dependOn(b.getInstallStep());
-    if (b.args) |args| {
-        exe_runner.addArgs(args);
-    }
+    const run_example = b.addRunArtifact(example);
+    run_example.step.dependOn(b.getInstallStep());
+    run_example.addPassthruArgs();
 
     // Run the application
     const run = b.step("run", "Run the demo application");
-    run.dependOn(&exe_runner.step);
+    run.dependOn(&run_example.step);
 }

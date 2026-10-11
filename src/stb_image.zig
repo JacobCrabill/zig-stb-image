@@ -1,7 +1,5 @@
 const std = @import("std");
-const c = @cImport({
-    @cInclude("stb/stb_image.h");
-});
+const c = @import("stb");
 
 const log = std.log.scoped(.stb_image);
 
